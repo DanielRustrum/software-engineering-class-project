@@ -1,0 +1,23 @@
+{
+  "name": "software-engineering-class-project",
+  "version": "0.0.1",
+  "description": "Class Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanielRustrum/software-engineering-class-project.git"
+  },
+  "keywords": [
+    "class",
+    "project"
+  ],
+  "author": "Gental Kagaroos",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DanielRustrum/software-engineering-class-project/issues"
+  },
+  "homepage": "https://github.com/DanielRustrum/software-engineering-class-project#readme"
+}
