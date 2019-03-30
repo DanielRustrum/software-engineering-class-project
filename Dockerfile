@@ -11,5 +11,11 @@ From ubuntu:latest
     # Cherrypy
     RUN pip3 install cherrypy
 
+#* Copy Current Directory
+    Copy . .
+
 #* Run Executable
-    RUN ./run.sh
+    CMD ["./run.sh"]
+
+#* Expose Port
+    EXPOSE 4000
