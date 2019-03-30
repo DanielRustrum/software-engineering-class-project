@@ -1,4 +1,4 @@
-From ubuntu:latest
+FROM ubuntu:latest
 
 #* Dependencies
     # Python 3 / Pip
@@ -12,7 +12,7 @@ From ubuntu:latest
     RUN pip3 install cherrypy
 
 #* Copy Current Directory
-    Copy . .
+    COPY . .
 
 #* Run Executable
     CMD ["./run.sh"]

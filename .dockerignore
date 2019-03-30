@@ -4,6 +4,8 @@
 
 # Files
 build.sh
+start.bat
+start.sh
 .gitignore
 .git
 package.json
