@@ -1,0 +1,9 @@
+# Directories
+**/.vscode/*
+**/src/client
+
+# Files
+build.sh
+.gitignore
+package.json
+README.md
