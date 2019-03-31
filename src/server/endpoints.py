@@ -2,12 +2,12 @@ import cherrypy
 
 from api import APIendpoint as APIendpoint
 from api import APIfallback as APIfallback
+from api import RequestHandler as RequestHandler
 
 def init():
     cherrypy.tree.mount(FrontEnd(), '/', 'src/client.conf')
     cherrypy.tree.mount(UserAPI(), '/api/user', 'src/api.conf')
     cherrypy.tree.mount(StorageAPI(), '/api/storage', 'src/api.conf')
-    cherrypy.tree.mount(TokenAPI(), '/api/token', 'src/api.conf')
 
 # GUI
 class FrontEnd(object):
@@ -18,10 +18,13 @@ class FrontEnd(object):
 
 # Rest API Endpoints
 class UserAPI(object):
-    pass    
+    @APIendpoint
+    def getSettings(self):
+        with RequestHandler(needsAuth = True) as result:
+            return result  
 
 class StorageAPI(object):
-    pass
-
-class TokenAPI(object):
-    pass
+    @APIendpoint
+    def getEntry(self):
+        with RequestHandler(needsAuth = True) as result:
+            return result
