@@ -11,7 +11,6 @@ dispatchServer.socket_port = 4000
 dispatchServer.subscribe()
 
 if __name__ == "__main__":
-    #* Deployment Instance
     endpoints.init()
     cherrypy.engine.start()
     cherrypy.engine.block()

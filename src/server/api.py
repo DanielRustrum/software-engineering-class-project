@@ -1,46 +1,86 @@
 import cherrypy
+import auth
+from settings import settingsManager
 
-# Todo: Setup and enforce request rules
-    #* - Content-type must be application/json
-    #* - Request type must match specified request type
-# Todo: Set up fallback in case rules are broken
-    #* - Return 400 error if request not formatted appropriately
-    #* - Catch error and return appropriate response
-    #* - If Content-type isn't application/json return GUI
-# Todo: Setup Server-side Authorization
-    #* - SHA encryption
-    #* - Authentication validation
+class _ErrorHandler(object):
+    def __init__(self):
+        self.errorDictionary = configManager.getConfig()["error"]["errorManagement"]
+        self.fallback = configManager.getConfig()["error"]["fallback"]
 
+    def error(self, status, message, traceback, version):
+        if status.split(" ")[0] in self.errorDictionary:
+            cherrypy.response.headers["Content-Type"] = self.errorDictionary[status.split(" ")[0]]["type"]
+            return self.errorDictionary[status.split(" ")[0]]["message"]
+        cherrypy.response.headers["Content-Type"] = self.fallback["type"]
+        return self.fallback["message"]
+
+    def refresh(self):
+        self.errorDictionary = configManager.getConfig()["error"]["errorManagement"]
+        self.fallback = configManager.getConfig()["error"]["fallback"]
+
+_errorHandler = _ErrorHandler()
 
 class RequestHandler(object):
-    def __init__(self, requestType = "GET", needsAuth = False, *queryies):
-        self.needsAuth = needsAuth
+    def __init__(self, requestType = "GET", needsToken = False, successCode = 200):
+        self.needsToken = needsToken
         self.requestType = requestType
-        self.queries = queryies
-        self.error = 0
-
-    def __enter__(self)
-        if self.error != 0:
-            return {"Error": {}}
-        elif len(self.queries) == 2:
-            return self.queries[1]
-        else:
-            return {}
+        self.status = 200
+    
+    def __enter__(self):
+        return [self._checkHandler("enter"), self.changeStatus]
 
     def __exit__(self, type, value, traceback):
-        #* Raise Errors
-        pass
+        self._checkHandler("exit")
+    
+    def changeStatus(self, status):
+        if not (status >= 200 and status < 300):
+            self.status = status
 
+    #* Private Methods
+    def _checkHandler(self, type = ""):
+        if type == "enter":
+            if not self._checkRequest():
+                return False
+            if self.needsToken:
+                return self._requestAuthorization()
+            return True
+        elif type == "exit":
+            if self.status != 200:
+                raise cherrypy.HTTPError(self.status)
+        else:
+            return True
 
-def APIendpoint(function):
+    def _requestAuthorization(self):
+        if "Authorization" in cherrypy.request.headers:
+            authList = cherrypy.request.headers["Authorization"].split(" ")
+            if authList[0] == "basic":
+                userPass = authList[1].split(":")
+            else:
+                self.status = 400
+                return False
+        else:
+            self.status = 400
+            return False
+        #! Authorize User
+        return True
+
+    def _checkRequest(self):
+        return True
+
+def endpoint(function):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def _(*args, **kwargs):
         return function(*args, **kwargs)
     return _
 
-def APIfallback(function):
-    @cherrypy.expose
-    def _(*args, **kwargs):
-        return function(*args, **kwargs)
-    return _
+def init():
+    cherrypy.config.update({
+        'error_page.400': _errorHandler.error,
+        'error_page.401': _errorHandler.error,
+        'error_page.404': _errorHandler.error,
+        'error_page.500': _errorHandler.error,
+    })
+
+def refresh():
+    _errorHandler.refresh()
