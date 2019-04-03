@@ -1,6 +1,7 @@
 # Directories
 **/.vscode/*
 **/src/client
+**/src/server/__pycache__
 
 # Files
 build.sh

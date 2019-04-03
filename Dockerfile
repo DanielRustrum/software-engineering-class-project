@@ -14,8 +14,9 @@ FROM ubuntu:latest
 #* Copy Current Directory
     COPY . .
 
+#* Expose Port
+    EXPOSE 8080
+
 #* Run Executable
     CMD ["./run.sh"]
 
-#* Expose Port
-    EXPOSE 4000

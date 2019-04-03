@@ -4,8 +4,8 @@ from settings import settingsManager
 
 class _ErrorHandler(object):
     def __init__(self):
-        self.errorDictionary = configManager.getConfig()["error"]["errorManagement"]
-        self.fallback = configManager.getConfig()["error"]["fallback"]
+        self.errorDictionary = settingsManager.getSettings()["error"]["errorManagement"]
+        self.fallback = settingsManager.getSettings()["error"]["fallback"]
 
     def error(self, status, message, traceback, version):
         if status.split(" ")[0] in self.errorDictionary:
@@ -15,8 +15,8 @@ class _ErrorHandler(object):
         return self.fallback["message"]
 
     def refresh(self):
-        self.errorDictionary = configManager.getConfig()["error"]["errorManagement"]
-        self.fallback = configManager.getConfig()["error"]["fallback"]
+        self.errorDictionary = settingsManager.getSettings()["error"]["errorManagement"]
+        self.fallback = settingsManager.getSettings()["error"]["fallback"]
 
 _errorHandler = _ErrorHandler()
 
@@ -75,6 +75,7 @@ def endpoint(function):
     return _
 
 def init():
+    refresh()
     cherrypy.config.update({
         'error_page.400': _errorHandler.error,
         'error_page.401': _errorHandler.error,
