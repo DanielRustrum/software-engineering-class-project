@@ -18,7 +18,6 @@ class _ErrorHandler(object):
         self.errorDictionary = settingsManager.getSettings()["error"]["errorManagement"]
         self.fallback = settingsManager.getSettings()["error"]["fallback"]
 
-_errorHandler = _ErrorHandler()
 
 class RequestHandler(object):
     def __init__(self, requestType = "GET", needsToken = False, successCode = 200):
@@ -85,3 +84,8 @@ def init():
 
 def refresh():
     _errorHandler.refresh()
+
+def group(groupUrl, groupObject):
+    cherrypy.tree.mount(groupObject, "/api/" + groupUrl, 'src/api.conf')
+
+_errorHandler = _ErrorHandler()
