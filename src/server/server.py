@@ -1,20 +1,15 @@
 import cherrypy
 from cherrypy._cpserver import Server
 
-import dispatcher
-import api
+import endpoints
 
-#* Server Setup
-cherrypy.server.unsubscribe()
-
-dispatchServer = Server()
-dispatchServer.socket_port = 4000
-dispatchServer.subscribe()
+class FrontEnd(object):
+    @cherrypy.expose
+    def index(self):
+        #* Angular Frontend
+        return open("src/public/index.html")
 
 if __name__ == "__main__":
-    #* Deployment Instance
-    api.init()
-    dispatcher.init()
-    cherrypy.engine.start()
-    cherrypy.engine.block()
+    endpoints.init()
+    cherrypy.quickstart(FrontEnd(), config="src/client.conf")
     

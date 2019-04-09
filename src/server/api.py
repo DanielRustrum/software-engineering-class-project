@@ -1,103 +1,97 @@
 import cherrypy
+import auth
+from settings import 
+import auth
 
-class ErrorHandler(object):
-    def __init__(self, errorDictonary):
-        self.errorDictonary = errorDictonary
-        self.uniqueErrorMessage = "Unique Error"
+class _ErrorHandler(object):
+    def __init__(self):
+        self.errorDictionary = settingsManager.getSettings()["error"]["errorManagement"]
+        self.fallback = settingsManager.getSettings()["error"]["fallback"]
 
-    def handleError(self, errorCode):
-        cherrypy.response.headers['Status'] = str(errorCode)
-        try:
-            return self.errorDictonary[errorCode]
-        except: 
-            return self.uniqueErrorMessage
+    def error(self, status, message, traceback, version):
+        if status.split(" ")[0] in self.errorDictionary:
+            cherrypy.response.headers["Content-Type"] = self.errorDictionary[status.split(" ")[0]]["type"]
+            return self.errorDictionary[status.split(" ")[0]]["message"]
+        cherrypy.response.headers["Content-Type"] = self.fallback["type"]
+        return self.fallback["message"]
 
-errorHandler = ErrorHandler({
-    400: "400 - Bad Request",
-    401: "401 - Unauthorized Access",
-    404: "404 - Request Not Found"
-})
-
-def init():
-    cherrypy.tree.mount(UserAPI(), '/api/user', 'src/api.conf')
-    cherrypy.tree.mount(ScriptAPI(), '/api/storage', 'src/api.conf')
+    def refresh(self):
+        self.errorDictionary = settingsManager.getSettings()["error"]["errorManagement"]
+        self.fallback = settingsManager.getSettings()["error"]["fallback"]
 
 
-def apiEndpoint(function):
+class RequestHandler(object):
+    def __init__(self, requestType = "GET", needsToken = False, successCode = 200):
+        self.needsToken = needsToken
+        self.requestType = requestType
+        self.status = 200
+    
+    def __enter__(self):
+        result = self._checkHandler("enter")
+        if type(result) == "List":
+            return [result[0], result[1], self.changeStatus]
+        return [result, self.changeStatus]
+
+    def __exit__(self, type, value, traceback):
+        self._checkHandler("exit")
+    
+    def changeStatus(self, status):
+        if not (status >= 200 and status < 300):
+            self.status = status
+
+    #* Private Methods
+    def _checkHandler(self, type = ""):
+        if type == "enter":
+            if not self._checkRequest():
+                return False
+            if self.needsToken:
+                return self._requestAuthorization()
+            return True
+        elif type == "exit":
+            if self.status != 200:
+                raise cherrypy.HTTPError(self.status)
+        else:
+            return True
+
+    def _requestAuthorization(self):
+        if "Authorization" in cherrypy.request.headers:
+            authList = cherrypy.request.headers["Authorization"].split(" ")
+            if authList[0] == "basic":
+                userPass = authList[1].split(":")
+                return auth.authorizeUserPass(userPass)
+            elif authList[0] == "token":
+                token = authList[1]
+                return auth.authorizeToken(token)
+            else:
+                self.status = 400
+                return False
+        else:
+            self.status = 400
+            return False
+
+    def _checkRequest(self):
+        return True
+
+def endpoint(function):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def _(*args, **kwargs):
         return function(*args, **kwargs)
     return _
 
-class UserAPI(object):
-    @cherrypy.expose
-    def default(self):
-        return "This is meant for user interaction with the server to run scripts"
+def init():
+    refresh()
+    cherrypy.config.update({
+        'error_page.400': _errorHandler.error,
+        'error_page.401': _errorHandler.error,
+        'error_page.404': _errorHandler.error,
+        'error_page.500': _errorHandler.error,
+    })
 
-    @apiEndpoint
-    def result(self, scriptName=""):
-        with RequestHandling("GET", False, errorHandler, scriptName) as result:
-            return {"Request": result}
+def refresh():
+    _errorHandler.refresh()
 
-    @apiEndpoint
-    def run(self, scriptName="", scriptParams={}):
-        with RequestHandling("POST", False, errorHandler, scriptName, scriptParams) as result:
-            return {"Request": result}
+def group(groupUrl, groupObject):
+    cherrypy.tree.mount(groupObject, "/api/" + groupUrl, 'src/api.conf')
 
-class StorageAPI(object):
-    @cherrypy.expose
-    def default(self):
-        return "In order to use the script api you need to pass the token located on the server that is changed every so often."
-
-    @apiEndpoint
-    def params(self, scriptName=""):
-        with RequestHandling("GET", True, errorHandler, scriptName) as result:
-            return {"Request": result}
-
-    @apiEndpoint
-    def run(self, scriptName="", scriptParams={}):
-        with RequestHandling("POST", True, errorHandler, scriptName, scriptParams) as result:
-            return {"Request": result}
-
-    @apiEndpoint
-    def results(self, scriptName="", scriptResults={}):
-        with RequestHandling("PUT", True, errorHandler, scriptName, scriptResults) as result:
-            return {"Request": result}
-
-class RequestHandling(object):
-    def __init__(self, requestType = "GET", needsAuth = False, errorHandler = ErrorHandler({}), *queryies):
-        self.needsAuth = needsAuth
-        self.requestType = requestType
-        self.queries = queryies
-        self.errorHandler = errorHandler
-        self.error = 0
-
-        #* Headers
-        cherrypy.response.headers['Content-Type'] = 'application/json'
-        cherrypy.response.headers['Status'] = "200"
-
-
-        # if cherrypy.request.headers['Content-Type'] != 'application/json':
-        #     self.error = 400
-
-        #* Check If Script Name Specified (400)
-        if(self.queries[0] == ""):
-            self.error = 400
-
-        #* Check if Request Type Matches (400)
-        if cherrypy.request.method != self.requestType:
-            self.error = 400
-
-        #* Results (200)
-        if self.error != 0:
-            return {"Error": self.errorHandler.handleError(self.error)}
-        elif len(self.queries) == 2:
-            return self.queries[1]
-        else:
-            return {}
-
-    def __exit__(self, type, value, traceback):
-        pass
-
-    
+_errorHandler = _ErrorHandler()
