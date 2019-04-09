@@ -1,6 +1,7 @@
 import cherrypy
 import auth
-from settings import settingsManager
+from settings import 
+import auth
 
 class _ErrorHandler(object):
     def __init__(self):
@@ -26,7 +27,10 @@ class RequestHandler(object):
         self.status = 200
     
     def __enter__(self):
-        return [self._checkHandler("enter"), self.changeStatus]
+        result = self._checkHandler("enter")
+        if type(result) == "List":
+            return [result[0], result[1], self.changeStatus]
+        return [result, self.changeStatus]
 
     def __exit__(self, type, value, traceback):
         self._checkHandler("exit")
@@ -54,14 +58,16 @@ class RequestHandler(object):
             authList = cherrypy.request.headers["Authorization"].split(" ")
             if authList[0] == "basic":
                 userPass = authList[1].split(":")
+                return auth.authorizeUserPass(userPass)
+            elif authList[0] == "token":
+                token = authList[1]
+                return auth.authorizeToken(token)
             else:
                 self.status = 400
                 return False
         else:
             self.status = 400
             return False
-        #! Authorize User
-        return True
 
     def _checkRequest(self):
         return True
