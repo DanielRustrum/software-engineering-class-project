@@ -11,5 +11,5 @@ class FrontEnd(object):
 
 if __name__ == "__main__":
     endpoints.init()
-    cherrypy.quickstart(FrontEnd(), config="src/client.conf")
+    cherrypy.quickstart(FrontEnd(), config="src/server/client.conf")
     

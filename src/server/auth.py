@@ -1,10 +1,7 @@
 def authorizeToken(token):
     return True
 
-def _generateToken(username):
-    pass
-
-def _getToken(username):
+def createSessionToken(username):
     pass
 
 #* Users
@@ -15,10 +12,4 @@ def createUser(username):
     pass
 
 def deleteUser(username):
-    pass
-
-def _getPass(username)
-    return ""
-
-def _getUser(token):
     pass

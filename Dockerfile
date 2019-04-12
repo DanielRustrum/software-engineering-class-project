@@ -10,6 +10,7 @@ FROM ubuntu:latest
 
     # Cherrypy
     RUN pip3 install cherrypy
+    RUN pip3 install pyrebase
 
 #* Copy Current Directory
     COPY . .

@@ -1,7 +1,6 @@
 import cherrypy
 
 import api
-from api import RequestHandler
 
 
 api.init()
@@ -14,11 +13,15 @@ def init():
 
 class User(object):
     @api.endpoint
-    def default(self,nill = ""):
+    def default(self, nill = ""):
         return "Hello"
     
     @api.endpoint
-    def token(self):
+    def login(self):
+        return "result"
+
+    @api.endpoint
+    def logout(self):
         return "result"
 
     @api.endpoint

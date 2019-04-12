@@ -1,6 +1,6 @@
 import cherrypy
 import auth
-from settings import 
+from settings import settingsManager 
 import auth
 
 class _ErrorHandler(object):
@@ -20,7 +20,7 @@ class _ErrorHandler(object):
         self.fallback = settingsManager.getSettings()["error"]["fallback"]
 
 
-class RequestHandler(object):
+class Request(object):
     def __init__(self, requestType = "GET", needsToken = False, successCode = 200):
         self.needsToken = needsToken
         self.requestType = requestType
@@ -92,6 +92,6 @@ def refresh():
     _errorHandler.refresh()
 
 def group(groupUrl, groupObject):
-    cherrypy.tree.mount(groupObject, "/api/" + groupUrl, 'src/api.conf')
+    cherrypy.tree.mount(groupObject, "/api/" + groupUrl)
 
 _errorHandler = _ErrorHandler()
