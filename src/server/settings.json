@@ -23,8 +23,12 @@
             "type": "text/html"
         }
     },
-    "publicDir": "/src/server/public",
-    "data": {
-        "directory": "database"
+    "dbkeys": {
+        "apiKey": "AIzaSyApuwSDR5yqhjV1SCpBJtsNvHPTCVPkCsY",
+        "authDomain": "mypouch-dev.firebaseapp.com",
+        "databaseURL": "https://mypouch-dev.firebaseio.com",
+        "projectId": "mypouch-dev",
+        "storageBucket": "mypouch-dev.appspot.com",
+        "messagingSenderId": "437818686263"
     }
 }
