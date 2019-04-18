@@ -1,2 +1,3 @@
 **/.vscode/*
 **/src/server/__pycache__/*
+**/Pyrebase/*
