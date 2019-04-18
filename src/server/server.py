@@ -6,8 +6,9 @@ import endpoints
 class FrontEnd(object):
     @cherrypy.expose
     def default(self, *args, **kwargs):
-        if len(args) > 0:
-            fileExtension = args[0].split(".")[1]
+        if len(args) > 0 and len(args[0].split(".")) > 1:
+            print(args[-1])
+            fileExtension = args[-1].split(".")[1]
             allowedExtensions = ["js", "css", "ico", "img", "svg", "png"]
             if fileExtension in allowedExtensions:
                 try:
