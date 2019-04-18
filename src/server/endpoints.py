@@ -1,6 +1,5 @@
-import cherrypy
-
 import api
+import db
 
 
 api.init()

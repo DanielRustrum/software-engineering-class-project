@@ -1,9 +1,8 @@
 import pyrebase
 
 from settings import settingsManager
-
-database = pyrebase.initialize_app(settingsManager.getSettings["dbkeys"]).database()
-
+keys = settingsManager.getSettings()["dbkeys"]
+database = pyrebase.initialize_app(keys).database()
 
 #* Auth
 def updateToken(uid):

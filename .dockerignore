@@ -2,6 +2,7 @@
 **/.vscode/*
 **/src/client
 **/src/server/__pycache__
+**/Pyrebase/*
 
 # Files
 build.sh
